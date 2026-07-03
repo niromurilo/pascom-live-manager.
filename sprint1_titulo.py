@@ -24,6 +24,5 @@ def main() -> None:
 
     print("Texto do PLM_TITULO atualizado com sucesso!")
 
-
 if __name__ == "__main__":
     main()
