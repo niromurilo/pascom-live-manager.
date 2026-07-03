@@ -4,6 +4,7 @@ Sprint 2 - Etapa 2: buscar o HTML da liturgia do dia (Canção Nova).
 """
 
 import requests
+from bs4 import BeautifulSoup, Tag
 
 URL_LITURGIA = "https://liturgia.cancaonova.com/pb/"
 
@@ -15,9 +16,58 @@ def buscar_html_da_liturgia(url: str) -> str:
     return resposta.text
 
 
+def _texto_paragrafos(container: Tag) -> str:
+    """Extrai o texto de um container, um parágrafo por linha.
+
+    Pega o texto de cada <p> separadamente, sem separador entre as tags
+    internas — assim tags inline (como <strong> nos números de versículo)
+    ficam coladas na frase, em vez de quebrar linha no meio dela.
+    """
+    linhas = []
+    for p in container.find_all("p"):
+        texto = p.get_text(strip=True).replace("\xa0", " ")
+        if texto:
+            linhas.append(texto)
+    return "\n".join(linhas)
+
+
+def extrair_liturgia(html: str) -> dict[str, str]:
+    """Extrai título, primeira leitura e salmo do HTML da Canção Nova."""
+    soup = BeautifulSoup(html, "html.parser")
+
+    titulo_tag = soup.find("meta", attrs={"property": "og:title"})
+    if titulo_tag is None:
+        raise ValueError("Não encontrei o título (meta og:title) na página.")
+    titulo = titulo_tag["content"]
+
+    leitura1_div = soup.find("div", id="liturgia-1")
+    if leitura1_div is None:
+        raise ValueError("Não encontrei a primeira leitura (div#liturgia-1) na página.")
+    leitura1 = _texto_paragrafos(leitura1_div)
+
+    salmo_div = soup.find("div", id="liturgia-2")
+    if salmo_div is None:
+        raise ValueError("Não encontrei o salmo (div#liturgia-2) na página.")
+    salmo = _texto_paragrafos(salmo_div)
+
+    return {
+        "titulo": titulo,
+        "leitura1": leitura1,
+        "salmo": salmo,
+    }
+
+
 def main() -> None:
     html = buscar_html_da_liturgia(URL_LITURGIA)
-    print(f"Página buscada com sucesso! Tamanho do HTML: {len(html)} caracteres")
+    liturgia = extrair_liturgia(html)
+
+    print("TÍTULO:", liturgia["titulo"])
+    print()
+    print("1ª LEITURA:")
+    print(liturgia["leitura1"])
+    print()
+    print("SALMO:")
+    print(liturgia["salmo"])
 
 
 if __name__ == "__main__":
