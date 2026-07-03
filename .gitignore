@@ -1,0 +1,45 @@
+# Segredos e configuracoes locais
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+config.local.*
+*.local.json
+
+# Ambientes virtuais e dependencias locais
+.venv/
+venv/
+env/
+ENV/
+
+# Python: cache, bytecode e ferramentas de teste/lint
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Saidas geradas pelo projeto
+pagina_liturgia.html
+logs/
+*.log
+output/
+build/
+dist/
+
+# Configuracoes pessoais de editor/IDE
+.vscode/
+.idea/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
