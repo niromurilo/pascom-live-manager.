@@ -69,3 +69,23 @@ via Pull Request (GitHub Flow).
 **Motivo:** o programa roda minutos antes de transmissões reais, toda
 semana — `main` precisa continuar íntegra mesmo com trabalho em andamento
 em outro lugar. Também prepara o projeto para colaboração futura.
+
+## 7. Integracao da liturgia com o OBS em arquivo proprio
+
+**Decisao:** criar `atualizar_liturgia_no_obs.py` como uma camada de
+integracao entre a extracao da liturgia e a atualizacao das fontes no OBS.
+
+**Motivo:** `buscar_liturgia.py` deve continuar responsavel por buscar e
+extrair dados da pagina, enquanto `sprint1_titulo.py` continua concentrando o
+acesso basico ao OBS. O novo arquivo apenas orquestra as duas partes e mapeia
+`titulo`, `leitura1` e `salmo` para `PLM_TITULO`, `PLM_LEITURA1` e
+`PLM_SALMO`.
+
+**Alternativas consideradas:** colocar essa logica dentro de
+`buscar_liturgia.py` ou dentro de `sprint1_titulo.py`. Descartadas porque
+misturariam responsabilidades. Criar uma arquitetura em `src/` tambem foi
+adiado para evitar complexidade antes do MVP pedir isso.
+
+**Risco assumido:** a integracao ainda reaproveita `OBS_HOST`, `OBS_PORT` e
+`OBS_SENHA` de `sprint1_titulo.py`. No futuro, essas configuracoes devem ir
+para variaveis de ambiente ou arquivo local ignorado pelo Git.
