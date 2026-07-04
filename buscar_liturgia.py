@@ -1,12 +1,22 @@
 """
 Pascom Live Manager
-Sprint 2 - Etapa 2: buscar o HTML da liturgia do dia (Canção Nova).
+Sprint 2 - Etapa 3: estruturar os dados da liturgia numa dataclass.
 """
+
+from dataclasses import dataclass
 
 import requests
 from bs4 import BeautifulSoup, Tag
 
 URL_LITURGIA = "https://liturgia.cancaonova.com/pb/"
+
+
+@dataclass(frozen=True)
+class LiturgiaDoDia:
+    """Representa os dados da liturgia de um dia específico."""
+    titulo: str
+    leitura1: str
+    salmo: str
 
 
 def buscar_html_da_liturgia(url: str) -> str:
@@ -17,12 +27,7 @@ def buscar_html_da_liturgia(url: str) -> str:
 
 
 def _texto_paragrafos(container: Tag) -> str:
-    """Extrai o texto de um container, um parágrafo por linha.
-
-    Pega o texto de cada <p> separadamente, sem separador entre as tags
-    internas — assim tags inline (como <strong> nos números de versículo)
-    ficam coladas na frase, em vez de quebrar linha no meio dela.
-    """
+    """Extrai o texto de um container, um parágrafo por linha."""
     linhas = []
     for p in container.find_all("p"):
         texto = p.get_text(strip=True).replace("\xa0", " ")
@@ -31,7 +36,7 @@ def _texto_paragrafos(container: Tag) -> str:
     return "\n".join(linhas)
 
 
-def extrair_liturgia(html: str) -> dict[str, str]:
+def extrair_liturgia(html: str) -> LiturgiaDoDia:
     """Extrai título, primeira leitura e salmo do HTML da Canção Nova."""
     soup = BeautifulSoup(html, "html.parser")
 
@@ -50,24 +55,20 @@ def extrair_liturgia(html: str) -> dict[str, str]:
         raise ValueError("Não encontrei o salmo (div#liturgia-2) na página.")
     salmo = _texto_paragrafos(salmo_div)
 
-    return {
-        "titulo": titulo,
-        "leitura1": leitura1,
-        "salmo": salmo,
-    }
+    return LiturgiaDoDia(titulo=titulo, leitura1=leitura1, salmo=salmo)
 
 
 def main() -> None:
     html = buscar_html_da_liturgia(URL_LITURGIA)
     liturgia = extrair_liturgia(html)
 
-    print("TÍTULO:", liturgia["titulo"])
+    print("TÍTULO:", liturgia.titulo)
     print()
     print("1ª LEITURA:")
-    print(liturgia["leitura1"])
+    print(liturgia.leitura1)
     print()
     print("SALMO:")
-    print(liturgia["salmo"])
+    print(liturgia.salmo)
 
 
 if __name__ == "__main__":
