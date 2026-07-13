@@ -89,3 +89,22 @@ adiado para evitar complexidade antes do MVP pedir isso.
 **Risco assumido:** a integracao ainda reaproveita `OBS_HOST`, `OBS_PORT` e
 `OBS_SENHA` de `sprint1_titulo.py`. No futuro, essas configuracoes devem ir
 para variaveis de ambiente ou arquivo local ignorado pelo Git.
+
+## 8. Animated Lower Thirds via arquivo de importacao
+
+**Decisao:** preparar a integracao inicial com o Animated Lower Thirds gerando
+um JSON de importacao para o painel `control-panel.html`.
+
+**Motivo:** a investigacao dos arquivos locais mostrou que o sistema usado nao
+e o H2R Graphics. O Animated Lower Thirds v1.6 guarda textos e configuracoes no
+`localStorage` do navegador do OBS e envia os dados para `browser-source.html`
+via `BroadcastChannel`. Nao existe uma API HTTP simples como no H2R.
+
+**Alternativas consideradas:** alterar diretamente os arquivos HTML do pacote
+em `Downloads` ou tentar escrever no armazenamento interno do OBS. Descartadas
+porque seriam frageis, dependentes da maquina e arriscadas para um projeto open
+source. A importacao JSON usa um fluxo que o proprio painel ja oferece.
+
+**Risco assumido:** essa etapa ainda exige que o operador importe o JSON no
+painel antes da transmissao. Uma integracao mais automatica podera ser estudada
+depois usando recursos especificos do OBS Browser Source, se forem confiaveis.
