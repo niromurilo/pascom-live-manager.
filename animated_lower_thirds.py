@@ -11,16 +11,24 @@ from pathlib import Path
 
 from buscar_liturgia import LiturgiaDoDia
 
-QUANTIDADE_MAXIMA_DE_LOWERS = 4
+QUANTIDADE_MAXIMA_DE_PAINEIS = 4
+QUANTIDADE_MAXIMA_DE_SLOTS = 10
+PAINEL_TITULO = 1
+PAINEL_LEITURAS = 2
 
 
 @dataclass(frozen=True)
 class LowerThird:
-    """Representa um lower de dois campos: nome e informacao."""
+    """Representa um valor a publicar num Lower Third do Animated Lower Thirds.
 
-    numero: int
+    slot=None -> valor "ativo" do painel (usado hoje só pelo título).
+    slot=1..10 -> memory slot específico dentro do painel.
+    """
+
+    painel: int
     nome: str
     info: str
+    slot: int | None = None
 
 
 def criar_lowers_da_liturgia(
@@ -29,35 +37,34 @@ def criar_lowers_da_liturgia(
 ) -> list[LowerThird]:
     """Cria os lowers disponiveis a partir dos dados extraidos da liturgia."""
     lower_titulo = _criar_lower_titulo(liturgia, celebrante)
-    lower_leitura1 = LowerThird(
-        numero=2,
-        nome="Primeira Leitura",
-        info=_extrair_referencia_da_primeira_leitura(liturgia.leitura1),
-    )
-    lower_salmo = LowerThird(
-        numero=3,
-        nome="Salmo Responsorial",
-        info=_extrair_referencia_do_salmo(liturgia.salmo),
-    )
+    sequencia_de_leituras = _criar_sequencia_de_leituras(liturgia)
 
-    return [lower_titulo, lower_leitura1, lower_salmo]
+    return [lower_titulo, *sequencia_de_leituras]
 
 
 def gerar_configuracao_importacao(lowers: list[LowerThird]) -> dict[str, str]:
     """Gera um dicionario compativel com a importacao do Animated Lower Thirds."""
     dados = {"lower-thirds-masterswitch": "true"}
 
-    for numero in range(1, QUANTIDADE_MAXIMA_DE_LOWERS + 1):
-        dados[f"lower-thirds-switch{numero}"] = "false"
-        dados[f"alt-{numero}-name"] = ""
-        dados[f"alt-{numero}-info"] = ""
-        dados[f"alt-{numero}-title"] = f"Lower Third {numero}"
+    for painel in range(1, QUANTIDADE_MAXIMA_DE_PAINEIS + 1):
+        dados[f"lower-thirds-switch{painel}"] = "false"
+        dados[f"alt-{painel}-name"] = ""
+        dados[f"alt-{painel}-info"] = ""
+        dados[f"alt-{painel}-title"] = f"Lower Third {painel}"
+
+    dados.update(_resetar_slots_do_painel(PAINEL_LEITURAS))
 
     for lower in lowers:
-        _validar_numero_do_lower(lower.numero)
-        dados[f"alt-{lower.numero}-name"] = lower.nome
-        dados[f"alt-{lower.numero}-info"] = lower.info
-        dados[f"alt-{lower.numero}-title"] = lower.nome
+        _validar_painel(lower.painel)
+
+        if lower.slot is None:
+            dados[f"alt-{lower.painel}-name"] = lower.nome
+            dados[f"alt-{lower.painel}-info"] = lower.info
+            dados[f"alt-{lower.painel}-title"] = lower.nome
+        else:
+            _validar_slot(lower.slot)
+            dados[f"alt-{lower.painel}-name-{lower.slot}"] = lower.nome
+            dados[f"alt-{lower.painel}-info-{lower.slot}"] = lower.info
 
     return dados
 
@@ -75,13 +82,56 @@ def _criar_lower_titulo(
     liturgia: LiturgiaDoDia,
     celebrante: str | None,
 ) -> LowerThird:
+    """Monta o Lower Third do título/celebrante — painel 1, valor único, sem slot."""
     if celebrante:
-        return LowerThird(numero=1, nome=liturgia.titulo, info=celebrante)
+        return LowerThird(painel=PAINEL_TITULO, nome=liturgia.titulo, info=celebrante)
 
-    return LowerThird(numero=1, nome="Liturgia Diaria", info=liturgia.titulo)
+    return LowerThird(painel=PAINEL_TITULO, nome="Liturgia Diaria", info=liturgia.titulo)
 
 
-def _extrair_referencia_da_primeira_leitura(texto: str) -> str:
+def _criar_sequencia_de_leituras(liturgia: LiturgiaDoDia) -> list[LowerThird]:
+    """Monta a sequencia de leituras no painel 2, um slot por item, na ordem da missa."""
+    sequencia = [
+        LowerThird(
+            painel=PAINEL_LEITURAS,
+            nome="Primeira Leitura",
+            info=_extrair_referencia(liturgia.leitura1),
+            slot=1,
+        ),
+        LowerThird(
+            painel=PAINEL_LEITURAS,
+            nome="Salmo Responsorial",
+            info=_extrair_referencia_do_salmo(liturgia.salmo),
+            slot=2,
+        ),
+    ]
+
+    proximo_slot = 3
+    if liturgia.leitura2 is not None:
+        sequencia.append(
+            LowerThird(
+                painel=PAINEL_LEITURAS,
+                nome="Segunda Leitura",
+                info=_extrair_referencia(liturgia.leitura2),
+                slot=proximo_slot,
+            )
+        )
+        proximo_slot += 1
+
+    sequencia.append(
+        LowerThird(
+            painel=PAINEL_LEITURAS,
+            nome="Evangelho",
+            info=_extrair_referencia(liturgia.evangelho),
+            slot=proximo_slot,
+        )
+    )
+
+    return sequencia
+
+
+def _extrair_referencia(texto: str) -> str:
+    """Extrai a citacao biblica (livro, capitulo e versiculo) da primeira linha do texto."""
     primeira_linha = _primeira_linha(texto)
     match = re.search(r"\((?P<referencia>[^)]+)\)", primeira_linha)
 
@@ -105,6 +155,25 @@ def _primeira_linha(texto: str) -> str:
     return ""
 
 
-def _validar_numero_do_lower(numero: int) -> None:
-    if numero < 1 or numero > QUANTIDADE_MAXIMA_DE_LOWERS:
-        raise ValueError(f"Numero de lower invalido: {numero}")
+def _resetar_slots_do_painel(painel: int) -> dict[str, str]:
+    """Limpa os slots de memoria de um painel antes de preenche-los de novo.
+
+    Evita que um slot usado ontem (ex: leitura2 num domingo) sobreviva
+    escondido num dia em que ele nao deveria existir.
+    """
+    dados: dict[str, str] = {}
+    for slot in range(1, QUANTIDADE_MAXIMA_DE_SLOTS + 1):
+        dados[f"alt-{painel}-name-{slot}"] = ""
+        dados[f"alt-{painel}-info-{slot}"] = ""
+
+    return dados
+
+
+def _validar_painel(painel: int) -> None:
+    if painel < 1 or painel > QUANTIDADE_MAXIMA_DE_PAINEIS:
+        raise ValueError(f"Numero de painel invalido: {painel}")
+
+
+def _validar_slot(slot: int) -> None:
+    if slot < 1 or slot > QUANTIDADE_MAXIMA_DE_SLOTS:
+        raise ValueError(f"Numero de slot invalido: {slot}")
