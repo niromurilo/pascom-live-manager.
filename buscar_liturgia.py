@@ -1,8 +1,11 @@
 """
 Pascom Live Manager
-Sprint 2 - Etapa 3: estruturar os dados da liturgia numa dataclass.
+Sprint 2 - busca, extrai e estrutura a liturgia do dia (Canção Nova).
 """
 
+from __future__ import annotations
+
+import re
 from dataclasses import dataclass
 
 import requests
@@ -13,49 +16,67 @@ URL_LITURGIA = "https://liturgia.cancaonova.com/pb/"
 
 @dataclass(frozen=True)
 class LiturgiaDoDia:
-    """Representa os dados da liturgia de um dia específico."""
+    """Representa os dados da liturgia de um dia especifico."""
+
     titulo: str
     leitura1: str
     salmo: str
+    evangelho: str
+    leitura2: str | None = None
 
 
 def buscar_html_da_liturgia(url: str) -> str:
-    """Busca o HTML da página de liturgia e retorna como texto bruto."""
+    """Busca o HTML da pagina de liturgia e retorna como texto bruto."""
     resposta = requests.get(url, timeout=10)
     resposta.raise_for_status()
     return resposta.text
 
 
-def _texto_paragrafos(container: Tag) -> str:
-    """Extrai o texto de um container, um parágrafo por linha."""
-    linhas = []
-    for p in container.find_all("p"):
-        texto = p.get_text(strip=True).replace("\xa0", " ")
-        if texto:
-            linhas.append(texto)
-    return "\n".join(linhas)
-
-
 def extrair_liturgia(html: str) -> LiturgiaDoDia:
-    """Extrai título, primeira leitura e salmo do HTML da Canção Nova."""
+    """Extrai titulo, leituras, salmo e evangelho do HTML da Cancao Nova."""
     soup = BeautifulSoup(html, "html.parser")
 
     titulo_tag = soup.find("meta", attrs={"property": "og:title"})
     if titulo_tag is None:
-        raise ValueError("Não encontrei o título (meta og:title) na página.")
+        raise ValueError("Nao encontrei o titulo (meta og:title) na pagina.")
     titulo = titulo_tag["content"]
 
     leitura1_div = soup.find("div", id="liturgia-1")
     if leitura1_div is None:
-        raise ValueError("Não encontrei a primeira leitura (div#liturgia-1) na página.")
+        raise ValueError("Nao encontrei a primeira leitura (div#liturgia-1) na pagina.")
     leitura1 = _texto_paragrafos(leitura1_div)
 
     salmo_div = soup.find("div", id="liturgia-2")
     if salmo_div is None:
-        raise ValueError("Não encontrei o salmo (div#liturgia-2) na página.")
+        raise ValueError("Nao encontrei o salmo (div#liturgia-2) na pagina.")
     salmo = _texto_paragrafos(salmo_div)
 
-    return LiturgiaDoDia(titulo=titulo, leitura1=leitura1, salmo=salmo)
+    evangelho_div = soup.find("div", id="liturgia-4")
+    if evangelho_div is None:
+        raise ValueError("Nao encontrei o evangelho (div#liturgia-4) na pagina.")
+    evangelho = _texto_paragrafos(evangelho_div)
+
+    leitura2_div = soup.find("div", id="liturgia-3")
+    leitura2 = _texto_paragrafos(leitura2_div) if leitura2_div is not None else None
+
+    return LiturgiaDoDia(
+        titulo=titulo,
+        leitura1=leitura1,
+        salmo=salmo,
+        evangelho=evangelho,
+        leitura2=leitura2,
+    )
+
+
+def _texto_paragrafos(container: Tag) -> str:
+    """Extrai o texto de um container, um paragrafo por linha."""
+    linhas = []
+    for p in container.find_all("p"):
+        texto = p.get_text().replace("\xa0", " ")
+        texto = re.sub(r"\s+", " ", texto).strip()
+        if texto:
+            linhas.append(texto)
+    return "\n".join(linhas)
 
 
 def main() -> None:
@@ -69,6 +90,13 @@ def main() -> None:
     print()
     print("SALMO:")
     print(liturgia.salmo)
+    print()
+    print("2ª LEITURA:", "—" if liturgia.leitura2 is None else "")
+    if liturgia.leitura2:
+        print(liturgia.leitura2)
+    print()
+    print("EVANGELHO:")
+    print(liturgia.evangelho)
 
 
 if __name__ == "__main__":
