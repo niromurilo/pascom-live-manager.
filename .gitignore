@@ -43,3 +43,9 @@ dist/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# IA
+AGENTS.md
+.gemini/
+.claude/
+.codex/
