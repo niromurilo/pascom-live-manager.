@@ -5,18 +5,20 @@ Sprint 2: buscar a liturgia do dia e atualizar fontes no OBS.
 
 import obsws_python as obs
 
-from buscar_liturgia import (
+from config import (
+    OBS_HOST,
+    OBS_PORT,
+    OBS_SENHA,
+    OBS_TIMEOUT,
     URL_LITURGIA,
+)
+
+from buscar_liturgia import (
     LiturgiaDoDia,
     buscar_html_da_liturgia,
     extrair_liturgia,
 )
-from sprint1_titulo import (
-    OBS_HOST,
-    OBS_PORT,
-    OBS_SENHA,
-    atualizar_texto_da_fonte,
-)
+from sprint1_titulo import atualizar_texto_da_fonte
 
 FONTE_TITULO = "PLM_TITULO"
 FONTE_LEITURA1 = "PLM_LEITURA1"
@@ -43,7 +45,7 @@ def main() -> None:
         host=OBS_HOST,
         port=OBS_PORT,
         password=OBS_SENHA,
-        timeout=3,
+        timeout=OBS_TIMEOUT,
     ) as cliente:
         atualizar_fontes_da_liturgia(cliente, liturgia)
 

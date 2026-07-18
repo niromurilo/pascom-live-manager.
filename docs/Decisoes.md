@@ -108,3 +108,27 @@ source. A importacao JSON usa um fluxo que o proprio painel ja oferece.
 **Risco assumido:** essa etapa ainda exige que o operador importe o JSON no
 painel antes da transmissao. Uma integracao mais automatica podera ser estudada
 depois usando recursos especificos do OBS Browser Source, se forem confiaveis.
+
+## 10. Encerrando a automação do Import: limitação confirmada da ferramenta
+
+**Decisão:** aceitar o clique manual de Import no Animated Lower Thirds como
+etapa permanente do fluxo. Encerrada a investigação de automação completa.
+
+**Motivo:** quatro mecanismos técnicos foram avaliados e descartados com
+evidência concreta: fetch() (bloqueado por CORS, origem file://), emit_event
+do obs-browser (Custom Browser Docks não têm suporte confirmado à API JS do
+OBS, ao contrário de Browser Sources), escrita direta em localStorage/LevelDB
+(decisão 8, formato interno não documentado), e File System Access API (sem
+precedente de uso em Custom Browser Docks do OBS). A causa raiz é comum às
+quatro tentativas: control-panel.html carrega como Custom Browser Dock, que
+tem superfície de API menor que Browser Source dentro do obs-browser —
+confirmado por relato direto de mantenedor do projeto.
+
+**Alternativas descartadas:** automação de interface via Playwright/CDP ou
+AutoHotkey — tecnicamente viável, mas excluída por decisão de produto: risco
+de interferir num processo ao vivo durante transmissão, dependência pesada,
+manutenção exige conhecimento avançado.
+
+**Risco assumido:** nenhum novo — o processo mantém a mesma etapa manual que
+já existe hoje (um clique de Import), só que agora com o JSON já preparado
+automaticamente pelo PLM.

@@ -1,0 +1,18 @@
+# OBS
+OBS_HOST = "localhost"
+OBS_PORT = 4455
+OBS_SENHA = "27082007"
+
+OBS_TIMEOUT = 3
+
+# Liturgia
+URL_LITURGIA = "https://liturgia.cancaonova.com/pb/"
+
+REQUEST_TIMEOUT = 10
+
+# Animated Lower Thirds
+QUANTIDADE_MAXIMA_PAINEIS = 4
+QUANTIDADE_MAXIMA_DE_SLOTS = 10
+
+PAINEL_TITULO = 1
+PAINEL_LEITURAS = 2

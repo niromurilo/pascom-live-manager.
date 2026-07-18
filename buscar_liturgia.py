@@ -4,7 +4,7 @@ Sprint 2 - busca, extrai e estrutura a liturgia do dia (Canção Nova).
 """
 
 from __future__ import annotations
-
+from config import REQUEST_TIMEOUT
 import re
 from dataclasses import dataclass
 
@@ -27,7 +27,7 @@ class LiturgiaDoDia:
 
 def buscar_html_da_liturgia(url: str) -> str:
     """Busca o HTML da pagina de liturgia e retorna como texto bruto."""
-    resposta = requests.get(url, timeout=10)
+    resposta = requests.get(url, timeout=REQUEST_TIMEOUT)
     resposta.raise_for_status()
     return resposta.text
 

@@ -1,27 +1,21 @@
-# Roadmap
-
-## v0.1
-
+v0.1 ✅ MVP
 ✔ Buscar liturgia
+✔ Gerar JSON Animated Lower Thirds
+✔ Atualizar fontes OBS
 
-✔ Atualizar OBS
+v0.2
+□ Interface gráfica
+□ Configurações
+□ Logs
 
----
+v0.3
+□ Atualização automática dos títulos
+□ Histórico
+□ Perfil da paróquia
 
-## v0.2
+v0.4
+□ Instalador
+□ Executável
 
-Atualizar título
-
-Atualizar descrição
-
----
-
-## v0.3
-
-Interface gráfica
-
----
-
-## v1.0
-
-Sistema completo
+v1.0
+Primeira versão estável
