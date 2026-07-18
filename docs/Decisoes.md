@@ -90,6 +90,14 @@ adiado para evitar complexidade antes do MVP pedir isso.
 `OBS_SENHA` de `sprint1_titulo.py`. No futuro, essas configuracoes devem ir
 para variaveis de ambiente ou arquivo local ignorado pelo Git.
 
+> **Atualização (jul/2026):**
+>
+> Este fluxo foi descontinuado. O projeto passou a utilizar
+> `preparar_lowers_animated.py`, que gera automaticamente o JSON
+> utilizado pelo Animated Lower Thirds. O arquivo
+> `atualizar_liturgia_no_obs.py` foi removido por não fazer mais
+> parte da arquitetura atual.
+
 ## 8. Animated Lower Thirds via arquivo de importacao
 
 **Decisao:** preparar a integracao inicial com o Animated Lower Thirds gerando
