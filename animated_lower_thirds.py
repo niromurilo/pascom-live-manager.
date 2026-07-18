@@ -177,3 +177,33 @@ def _validar_painel(painel: int) -> None:
 def _validar_slot(slot: int) -> None:
     if slot < 1 or slot > QUANTIDADE_MAXIMA_DE_SLOTS:
         raise ValueError(f"Numero de slot invalido: {slot}")
+
+def validar_configuracao_gerada(lowers: list[LowerThird], caminho: Path) -> None:
+    """Valida o JSON gerado antes do operador importar no Animated Lower Thirds.
+
+    Confere que o arquivo existe, é JSON válido, e que cada lower que
+    deveria ter sido escrito de fato aparece no arquivo com conteúdo não
+    vazio. Levanta ValueError com mensagem clara em caso de problema —
+    nunca falha silenciosamente, nunca deixa o operador importar um JSON
+    quebrado sem saber.
+    """
+    if not caminho.exists():
+        raise ValueError(f"Arquivo não foi criado: {caminho}")
+
+    try:
+        dados = json.loads(caminho.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as erro:
+        raise ValueError(f"Arquivo gerado não é um JSON válido: {erro}") from erro
+
+    for lower in lowers:
+        if lower.slot is None:
+            chave_nome = f"alt-{lower.painel}-name"
+            chave_info = f"alt-{lower.painel}-info"
+        else:
+            chave_nome = f"alt-{lower.painel}-name-{lower.slot}"
+            chave_info = f"alt-{lower.painel}-info-{lower.slot}"
+
+        if not dados.get(chave_nome):
+            raise ValueError(f"Campo '{chave_nome}' ficou vazio no JSON gerado ({lower.nome}).")
+        if not dados.get(chave_info):
+            raise ValueError(f"Campo '{chave_info}' ficou vazio no JSON gerado ({lower.nome}).")
