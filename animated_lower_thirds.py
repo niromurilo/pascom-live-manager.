@@ -9,7 +9,11 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from buscar_liturgia import LiturgiaDoDia
+from buscar_liturgia import (
+    LiturgiaDoDia,
+    extrair_citacao,
+    extrair_citacao_do_salmo,
+)
 
 QUANTIDADE_MAXIMA_DE_PAINEIS = 4
 QUANTIDADE_MAXIMA_DE_SLOTS = 10
@@ -95,13 +99,13 @@ def _criar_sequencia_de_leituras(liturgia: LiturgiaDoDia) -> list[LowerThird]:
         LowerThird(
             painel=PAINEL_LEITURAS,
             nome="Primeira Leitura",
-            info=_extrair_referencia(liturgia.leitura1),
+            info=extrair_citacao(liturgia.leitura1),
             slot=1,
         ),
         LowerThird(
             painel=PAINEL_LEITURAS,
             nome="Salmo Responsorial",
-            info=_extrair_referencia_do_salmo(liturgia.salmo),
+            info=extrair_citacao_do_salmo(liturgia.salmo),
             slot=2,
         ),
     ]
@@ -112,7 +116,7 @@ def _criar_sequencia_de_leituras(liturgia: LiturgiaDoDia) -> list[LowerThird]:
             LowerThird(
                 painel=PAINEL_LEITURAS,
                 nome="Segunda Leitura",
-                info=_extrair_referencia(liturgia.leitura2),
+                info=extrair_citacao(liturgia.leitura2),
                 slot=proximo_slot,
             )
         )
@@ -122,37 +126,12 @@ def _criar_sequencia_de_leituras(liturgia: LiturgiaDoDia) -> list[LowerThird]:
         LowerThird(
             painel=PAINEL_LEITURAS,
             nome="Evangelho",
-            info=_extrair_referencia(liturgia.evangelho),
+            info=extrair_citacao(liturgia.evangelho),
             slot=proximo_slot,
         )
     )
 
     return sequencia
-
-
-def _extrair_referencia(texto: str) -> str:
-    """Extrai a citacao biblica (livro, capitulo e versiculo) da primeira linha do texto."""
-    primeira_linha = _primeira_linha(texto)
-    match = re.search(r"\((?P<referencia>[^)]+)\)", primeira_linha)
-
-    if match:
-        return match.group("referencia")
-
-    return primeira_linha
-
-
-def _extrair_referencia_do_salmo(texto: str) -> str:
-    primeira_linha = _primeira_linha(texto)
-    return primeira_linha.replace("Responsorio", "").replace("Responsório", "").strip()
-
-
-def _primeira_linha(texto: str) -> str:
-    for linha in texto.splitlines():
-        linha_limpa = linha.strip()
-        if linha_limpa:
-            return linha_limpa
-
-    return ""
 
 
 def _resetar_slots_do_painel(painel: int) -> dict[str, str]:

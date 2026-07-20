@@ -98,6 +98,28 @@ def main() -> None:
     print("EVANGELHO:")
     print(liturgia.evangelho)
 
+def _primeira_linha(texto: str) -> str:
+    for linha in texto.splitlines():
+        linha_limpa = linha.strip()
+        if linha_limpa:
+            return linha_limpa
+
+    return ""
+
+def extrair_citacao (texto: str) -> str:
+    """Extrai a citacao biblica (livro, capitulo e versiculo) da primeira linha do texto."""
+    primeira_linha = _primeira_linha(texto)
+    match = re.search(r"\((?P<referencia>[^)]+)\)", primeira_linha)
+
+    if match:
+        return match.group("referencia")
+
+    return primeira_linha
+
+
+def extrair_citacao_do_salmo(texto: str) -> str:
+    primeira_linha = _primeira_linha(texto)
+    return primeira_linha.replace("Responsorio", "").replace("Responsório", "").strip()
 
 if __name__ == "__main__":
     main()
