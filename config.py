@@ -1,9 +1,13 @@
-# OBS
-OBS_HOST = "localhost"
-OBS_PORT = 4455
-OBS_SENHA = "27082007"
+import os
+from dotenv import load_dotenv
 
-OBS_TIMEOUT = 3
+load_dotenv()
+
+# OBS
+OBS_HOST = os.getenv("OBS_HOST", "localhost")
+OBS_PORT = int(os.getenv("OBS_PORT", 4455))
+OBS_SENHA = os.getenv("OBS_SENHA", "")
+OBS_TIMEOUT = int(os.getenv("OBS_TIMEOUT", 3))
 
 # Liturgia
 URL_LITURGIA = "https://liturgia.cancaonova.com/pb/"

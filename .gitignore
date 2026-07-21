@@ -49,3 +49,5 @@ AGENTS.md
 .gemini/
 .claude/
 .codex/
+
+.env
