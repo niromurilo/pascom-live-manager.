@@ -186,3 +186,28 @@ def validar_configuracao_gerada(lowers: list[LowerThird], caminho: Path) -> None
             raise ValueError(f"Campo '{chave_nome}' ficou vazio no JSON gerado ({lower.nome}).")
         if not dados.get(chave_info):
             raise ValueError(f"Campo '{chave_info}' ficou vazio no JSON gerado ({lower.nome}).")
+        
+def gerar_e_validar_json_dos_lowers(lowers: list[LowerThird], caminho: Path) -> bool:
+    """Salva e valida o JSON dos lowers, imprimindo mensagem amigável em caso de erro.
+
+    Retorna True se tudo correu bem, False se falhou — quem chama decide
+    o que fazer a seguir.
+    """
+    try:
+        dados = gerar_configuracao_importacao(lowers)
+        salvar_configuracao_importacao(dados, caminho)
+        validar_configuracao_gerada(lowers, caminho)
+        return True
+    except (OSError, ValueError) as erro:
+        print(f"❌ Problema ao gerar o arquivo: {erro}")
+        return False
+
+
+def montar_resumo_dos_lowers(liturgia: LiturgiaDoDia, lowers: list[LowerThird], caminho: Path) -> str:
+    """Monta o texto de resumo dos lowers gerados, pra impressão ou gravação em arquivo."""
+    linhas = [f"Título: {liturgia.titulo}"]
+    for lower in lowers:
+        slot_txt = f" slot {lower.slot}" if lower.slot else ""
+        linhas.append(f"Painel {lower.painel}{slot_txt} — {lower.nome}: {lower.info}")
+    linhas.append(f"\nArquivo: {caminho}")
+    return "\n".join(linhas)
