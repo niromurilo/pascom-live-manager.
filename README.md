@@ -34,3 +34,13 @@ Consulte a pasta `/docs`.
 ## Licença
 
 MIT
+
+## Instalação
+
+```bash
+git clone ...
+cd pascom-live-manager
+
+python -m venv .venv
+
+pip install -r requirements.txt
