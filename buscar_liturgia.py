@@ -121,5 +121,22 @@ def extrair_citacao_do_salmo(texto: str) -> str:
     primeira_linha = _primeira_linha(texto)
     return primeira_linha.replace("Responsorio", "").replace("Responsório", "").strip()
 
+def buscar_liturgia_ou_none(url: str) -> LiturgiaDoDia | None:
+    """Busca e extrai a liturgia, imprimindo mensagem amigável em caso de erro.
+
+    Retorna None se falhar — quem chama decide o que fazer a seguir
+    (normalmente, interromper o fluxo com return).
+    """
+    try:
+        html = buscar_html_da_liturgia(url)
+        return extrair_liturgia(html)
+    except requests.exceptions.RequestException as erro:
+        print(f"❌ Não consegui buscar a liturgia (problema de conexão): {erro}")
+        return None
+    except ValueError as erro:
+        print(f"❌ A página da liturgia mudou de estrutura e a extração falhou: {erro}")
+        print("   Avise quem cuida do projeto — provavelmente precisa ajustar o scraping.")
+        return None
+
 if __name__ == "__main__":
     main()
