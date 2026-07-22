@@ -5,7 +5,7 @@ Gera o título e a descrição da transmissão a partir da liturgia do dia.
 """
 
 from __future__ import annotations
-
+from pathlib import Path
 from datetime import date
 
 from buscar_liturgia import (
@@ -46,3 +46,8 @@ def gerar_descricao(
     descricao += f"• Evangelho: {extrair_citacao(liturgia.evangelho)}"
 
     return descricao
+
+def salvar_texto(conteudo: str, caminho: Path) -> None:
+    """Salva um texto (título ou descrição) num arquivo, criando a pasta se preciso."""
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    caminho.write_text(conteudo, encoding="utf-8")
