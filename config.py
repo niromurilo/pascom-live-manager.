@@ -8,7 +8,7 @@ OBS_HOST = os.getenv("OBS_HOST", "localhost")
 OBS_PORT = int(os.getenv("OBS_PORT", 4455))
 OBS_SENHA = os.getenv("OBS_SENHA", "")
 OBS_TIMEOUT = int(os.getenv("OBS_TIMEOUT", 3))
-
+NOME_PAROQUIA = os.getenv("NOME_PAROQUIA", "")
 # Liturgia
 URL_LITURGIA = "https://liturgia.cancaonova.com/pb/"
 
